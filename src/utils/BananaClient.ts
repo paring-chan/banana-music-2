@@ -34,19 +34,28 @@ export default class BananaClient extends Client {
 
   async executeCommand(msg: Message) {
     const prefix = this.config.prefix as string
-    if (msg.author.bot || msg.author.id === this.user?.id || !msg.content.startsWith(prefix)) return
+    if (
+      msg.author.bot ||
+      msg.author.id === this.user?.id ||
+      !msg.content.startsWith(prefix)
+    )
+      return
     const args = msg.content.slice(prefix.length).split(' ')
     const command = args.shift()
     if (!command) return
-    const cmd = this.commands.find(i => i.name === command.toLowerCase() || i.aliases.includes(command.toLowerCase()))
+    const cmd = this.commands.find(
+      (i) =>
+        i.name === command.toLowerCase() ||
+        i.aliases.includes(command.toLowerCase()),
+    )
     if (!cmd) return
     if (cmd.ownerOnly) {
-        if (!this.owners.includes(msg.author.id)) return msg.reply('권한 없어여!')
+      if (!this.owners.includes(msg.author.id)) return msg.reply('권한 없어여!')
     }
     try {
-        await cmd.execute(msg)
+      await cmd.execute(msg)
     } catch (e) {
-        return msg.reply(`에러\n\`\`\`js\n${e.message}\`\`\``)
+      return msg.reply(`에러\n\`\`\`js\n${e.message}\`\`\``)
     }
   }
 
