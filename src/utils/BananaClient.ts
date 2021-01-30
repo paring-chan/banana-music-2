@@ -201,7 +201,7 @@ export default class BananaClient extends Client {
       if (!this.owners.includes(msg.author.id)) return msg.reply('권한 없어여!')
     }
     try {
-      await cmd.execute(msg)
+      await cmd.execute(msg, this)
     } catch (e) {
       return msg.reply(`에러\n\`\`\`js\n${e.message}\`\`\``)
     }
