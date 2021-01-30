@@ -100,6 +100,47 @@ export default class BananaClient extends Client {
 
     this.on('ready', () => this.music.init(this.user!.id))
     this.on('raw', (payload) => this.music.updateVoiceState(payload))
+
+    this.on('messageReactionAdd', (reaction, user) => {
+      if (reaction.message.author.id === user.id) return
+      const guild = reaction.message.guild
+      if (!guild) return
+      const player = this.music.players.get(guild.id)
+      if (!player) return
+      const m = this.controllerMap.get(guild.id)
+      if (m?.id === reaction.message.id) {
+        reaction.users.remove(user as User)
+        if (
+          player.voiceChannel !==
+          guild.members.cache.get(user.id)?.voice.channelID
+        )
+          return
+
+        if (reaction.emoji.name === '⏯️') {
+          if (!player.paused) player.pause(true)
+          else player.pause(false)
+        }
+        if (reaction.emoji.name === '⏹️') {
+          player.destroy()
+        }
+        if (reaction.emoji.name === '▶️') {
+          player.stop()
+        }
+        if (reaction.emoji.name === '🔄') {
+          if (player.queueRepeat) return player.setQueueRepeat(false)
+          if (player.trackRepeat) return player.setQueueRepeat(true)
+          player.setTrackRepeat(true)
+        }
+        if (reaction.emoji.name === '➕') {
+          if (player.volume > 1000) return
+          player.setVolume(player.volume + 5)
+        }
+        if (reaction.emoji.name === '➖') {
+          if (player.volume < 0) return
+          player.setVolume(player.volume - 5)
+        }
+      }
+    })
   }
 
   static async initController(msg: Message) {
@@ -201,7 +242,7 @@ export default class BananaClient extends Client {
       if (!this.owners.includes(msg.author.id)) return msg.reply('권한 없어여!')
     }
     try {
-      await cmd.execute(msg, this)
+      await cmd.execute(msg, this, args)
     } catch (e) {
       return msg.reply(`에러\n\`\`\`js\n${e.message}\`\`\``)
     }

@@ -4,7 +4,11 @@ import BananaClient from './BananaClient'
 export type Command = {
   name: string
   aliases: string[]
-  execute: (msg: Message, client: BananaClient) => Promise<any> | any
+  execute: (
+    msg: Message,
+    client: BananaClient,
+    args: string[],
+  ) => Promise<any> | any
   ownerOnly?: boolean
   category: string
 }
