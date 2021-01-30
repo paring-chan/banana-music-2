@@ -1,15 +1,38 @@
 import { Client, Team, User } from "discord.js";
 import Dokdo from "dokdo";
+import path from "path";
+import fs from 'fs'
+import { Command } from "./typings";
 
 export default class BananaClient extends Client {
     owners = []
 
     config = require('../../config.json')
 
+    path = path.resolve(path.join(__dirname, '../commands'))
+
     constructor() {
         super({
             restTimeOffset: 0
         })
+        this.on('ready', () => console.log(`Logged in as ${this.user!.tag}`))
+        this.load(this.path)
+    }
+
+    commands: Command[] = []
+
+    load(dir: string) {
+        const items = fs.readdirSync(dir)
+        for (const item of items) {
+            if (fs.lstatSync(item).isDirectory()) {
+                this.load(path.join(dir, item))
+            } else {
+                const p = require.resolve(path.join(dir, item))
+                delete require.cache[p]
+                const module = require(p).default as Command
+                this.commands.push(module)
+            }
+        }
     }
 
     async login() {
