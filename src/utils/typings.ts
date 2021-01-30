@@ -5,4 +5,5 @@ export type Command = {
     aliases: string[]
     execute: (msg: Message) => Promise<any> | any
     ownerOnly?: boolean
+    category: string
 }
